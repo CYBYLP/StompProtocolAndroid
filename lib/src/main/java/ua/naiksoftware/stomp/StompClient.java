@@ -11,13 +11,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Completable;
-import io.reactivex.CompletableSource;
-import io.reactivex.Flowable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.subjects.BehaviorSubject;
-import io.reactivex.subjects.PublishSubject;
+import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.CompletableSource;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 import ua.naiksoftware.stomp.dto.StompCommand;
 import ua.naiksoftware.stomp.dto.StompMessage;
 import ua.naiksoftware.stomp.pathmatcher.PathMatcher;
@@ -140,9 +140,17 @@ public class StompClient {
                 .map(StompMessage::from)
                 .filter(heartBeatTask::consumeHeartBeat)
                 .doOnNext(getMessageStream()::onNext)
-                .filter(msg -> msg.getStompCommand().equals(StompCommand.CONNECTED))
+                .filter(msg -> msg.getStompCommand().equals(StompCommand.CONNECTED) || msg.getStompCommand().equals(StompCommand.ERROR))
                 .subscribe(stompMessage -> {
-                    getConnectionStream().onNext(true);
+                    switch (stompMessage.getStompCommand()){
+                        case StompCommand.CONNECTED:
+                            lifecyclePublishSubject.onNext(new LifecycleEvent(LifecycleEvent.Type.CONNECTED));
+                            getConnectionStream().onNext(true);
+                            break;
+                        case StompCommand.ERROR:
+                            lifecyclePublishSubject.onNext(new LifecycleEvent(LifecycleEvent.Type.ERROR,stompMessage.getPayload()));
+                            break;
+                    }
                 }, onError -> {
                     Log.e(TAG, "Error parsing message", onError);
                 });
@@ -214,6 +222,9 @@ public class StompClient {
     }
 
     public Completable disconnectCompletable() {
+
+        getConnectionStream().onNext(false);
+        lifecyclePublishSubject.onNext(new LifecycleEvent(LifecycleEvent.Type.CLOSED));
 
         heartBeatTask.shutdown();
 

@@ -12,5 +12,6 @@ public class StompCommand {
     public static final String SUBSCRIBE = "SUBSCRIBE";
     public static final String UNSUBSCRIBE = "UNSUBSCRIBE";
 
+    public static final String ERROR = "ERROR";
     public static final String UNKNOWN = "UNKNOWN";
 }

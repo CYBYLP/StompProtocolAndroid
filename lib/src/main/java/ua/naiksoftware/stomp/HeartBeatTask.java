@@ -5,9 +5,9 @@ import android.util.Log;
 
 import java.util.concurrent.TimeUnit;
 
-import io.reactivex.Scheduler;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import ua.naiksoftware.stomp.dto.StompCommand;
 import ua.naiksoftware.stomp.dto.StompHeader;
 import ua.naiksoftware.stomp.dto.StompMessage;
@@ -140,7 +140,7 @@ public class HeartBeatTask {
         if (serverHeartbeat > 0) {
             final long now = System.currentTimeMillis();
             //use a forgiving boundary as some heart beats can be delayed or lost.
-            final long boundary = now - (3 * serverHeartbeat);
+            final long boundary = now - (1 * serverHeartbeat);
             //we need to check because the task could failed to abort
             if (lastServerHeartBeat < boundary) {
                 Log.d(TAG, "It's a sad day ;( Server didn't send heart-beat on time. Last received at '" + lastServerHeartBeat + "' and now is '" + now + "'");
@@ -151,6 +151,7 @@ public class HeartBeatTask {
                 Log.d(TAG, "We were checking and server sent heart-beat on time. So well-behaved :)");
                 lastServerHeartBeat = System.currentTimeMillis();
             }
+            this.scheduleServerHeartBeatCheck();
         }
     }
 

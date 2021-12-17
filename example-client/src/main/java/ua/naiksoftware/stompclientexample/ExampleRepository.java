@@ -1,7 +1,7 @@
 package ua.naiksoftware.stompclientexample;
 
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Flowable;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
 
