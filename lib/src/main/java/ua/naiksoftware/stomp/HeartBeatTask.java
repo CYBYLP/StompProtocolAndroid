@@ -140,15 +140,15 @@ public class HeartBeatTask {
         if (serverHeartbeat > 0) {
             final long now = System.currentTimeMillis();
             //use a forgiving boundary as some heart beats can be delayed or lost.
-            final long boundary = now - (1 * serverHeartbeat);
+            final long boundary = now - (3 * serverHeartbeat);
             //we need to check because the task could failed to abort
             if (lastServerHeartBeat < boundary) {
-                Log.d(TAG, "It's a sad day ;( Server didn't send heart-beat on time. Last received at '" + lastServerHeartBeat + "' and now is '" + now + "'");
+                Log.d(TAG, "It's a sad day ;( Server didn't send heart-beat on time. Last received at '" + lastServerHeartBeat + "' and now is '" + now + "' (boundary: '"+boundary+"')");
                 if (failedListener != null) {
                     failedListener.onServerHeartBeatFailed();
                 }
             } else {
-                Log.d(TAG, "We were checking and server sent heart-beat on time. So well-behaved :)");
+                Log.d(TAG, "We were checking and server sent heart-beat on time.  Last received at '" + lastServerHeartBeat + "' and now is '" + now + "' (boundary: '"+boundary+"'). So well-behaved :)");
                 lastServerHeartBeat = System.currentTimeMillis();
             }
             this.scheduleServerHeartBeatCheck();
